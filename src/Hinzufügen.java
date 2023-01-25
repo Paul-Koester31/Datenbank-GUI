@@ -23,9 +23,6 @@ public class Hinzufügen extends JFrame implements ActionListener {
         this.setLayout(null);
 
 
-        String[][] temp = {{""}};
-        t = new DefaultTableModel();
-        table = new JTable(t);
 
         a = new JButton("Zurück");
         a.setBounds(50, 30, 80, 50);
@@ -70,12 +67,12 @@ public class Hinzufügen extends JFrame implements ActionListener {
                             }
                         }
 
-                        if (i == z -1) {
+                        if (i == z - 1) {
                             spalten = spalten + "'" + b[i].getText() + "'";
-                            sname =sname+rm.getColumnName(i+1);
+                            sname = sname + rm.getColumnName(i + 1);
                         } else {
                             spalten = spalten + "'" + b[i].getText() + "',";
-                            sname =sname+rm.getColumnName(i+1)+",";
+                            sname = sname + rm.getColumnName(i + 1) + ",";
                         }
 
 
@@ -85,30 +82,23 @@ public class Hinzufügen extends JFrame implements ActionListener {
                 }
                 System.out.println(sname);
                 System.out.println(spalten);
-                String sql = "Insert into " + tab + "("+sname+") Values (" + spalten + ")";
+                String sql = "Insert into " + tab + "(" + sname + ") Values (" + spalten + ")";
                 Connection conn = null;
                 try {
                     conn = DriverManager.getConnection(url, "root", "");
                     Statement s = conn.createStatement();
                     ResultSet a = s.executeQuery(sql);
                     this.dispose();
-                   // Tabellen.this.remove(table);
                     Tabellen.einfügen(tab);
-                    Tabellen.table.repaint();
                 } catch (SQLException ex) {
                     throw new RuntimeException(ex);
                 }
-
-
-
             });
             this.add(einf);
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
-
     }
 
     @Override
