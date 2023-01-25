@@ -13,7 +13,7 @@ public class Tabellen extends JFrame implements TableModelListener {
     JButton del = null;
     static ResultSetMetaData rm = null;
     static DefaultTableModel t = new DefaultTableModel();
-    static JTable table =new JTable(t);
+    static JTable table = new JTable(t);
     static ResultSet r = null;
     static String url = "jdbc:mariadb://127.0.0.1:3306/bundesliga";
 
@@ -52,41 +52,45 @@ public class Tabellen extends JFrame implements TableModelListener {
 
 
         del = new JButton("Löschen");
-        del.setBounds(290, 480, 100, 50);
+        del.setBounds(180, 480, 100, 50);
         del.addActionListener(e -> {
             Löschen l = new Löschen(tab, t, table);
-
+            table.clearSelection();
 
         });
         this.add(del);
 
-        t.addTableModelListener(e->{
-            int zeile =table.getSelectedRow();
+        t.addTableModelListener(e -> {
+            int zeile = table.getSelectedRow();
             int spalte = table.getSelectedColumn();
-            if(spalte>0 && zeile >0){
-                int response = JOptionPane.showConfirmDialog(null, "Wollen Sie dein Eintrag in Zeile " + (zeile+1) +", Spalte "+(spalte +1)+ " ändern?", "Bestätigen", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+            if (spalte > 0 && zeile > 0) {
+                int response = 0;
+                try {
+                    response = JOptionPane.showConfirmDialog(null, "Wollen Sie dein Eintrag in Zeile " + (zeile + 1) + ", Spalte :" + (rm.getColumnName(spalte + 1)) + " ändern?", "Bestätigen", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                } catch (SQLException ex) {
+                    throw new RuntimeException(ex);
+                }
                 if (response == 0) {
                     try (Connection conn = DriverManager.getConnection(url, "root", "")) {
                         Statement s = conn.createStatement();
-                        System.out.println(t.getColumnName(spalte)+"\n"+rm.getColumnTypeName(spalte+1));
-                        if(rm.getColumnTypeName(spalte+1).equalsIgnoreCase("Varchar")){
+                        System.out.println(t.getColumnName(spalte) + "\n" + rm.getColumnTypeName(spalte + 1));
+                        if (rm.getColumnTypeName(spalte + 1).equalsIgnoreCase("Varchar")) {
                             ResultSet r = s.executeQuery("Update " + tab + " set " + t.getColumnName(spalte) + "= '" + t.getValueAt(zeile, spalte).toString() + "' WHERE " + t.getColumnName(0) + " = " + t.getValueAt(zeile, 0));
 
-                        } else if (rm.getColumnTypeName(spalte+1).equalsIgnoreCase("Date")) {
+                        } else if (rm.getColumnTypeName(spalte + 1).equalsIgnoreCase("Date")) {
                             ResultSet r = s.executeQuery("Update " + tab + " set " + t.getColumnName(spalte) + "= '" + t.getValueAt(zeile, spalte).toString() + "' WHERE " + t.getColumnName(0) + " = " + t.getValueAt(zeile, 0));
 
-                        }else {
+                        } else {
                             ResultSet r = s.executeQuery("Update " + tab + " set " + t.getColumnName(spalte) + "= " + t.getValueAt(zeile, spalte).toString() + " WHERE " + t.getColumnName(0) + " = " + t.getValueAt(zeile, 0));
 
                         }
-                        t.removeTableModelListener(this::tableChanged);
+                        table.clearSelection();
                     } catch (SQLException f) {
                         throw new RuntimeException(f);
                     }
                     t.fireTableDataChanged();
-                } else if (response == 1) {
-                    einfügen(tab);
-                    t.fireTableDataChanged();
+                } else {
+                    table.clearSelection();
                 }
 
             }
@@ -131,8 +135,7 @@ public class Tabellen extends JFrame implements TableModelListener {
 
     @Override
     public void tableChanged(TableModelEvent e) {
-        System.out.println(table.getSelectedRow()+"" +table.getSelectedColumn());
-
+        System.out.println(table.getSelectedRow() + "" + table.getSelectedColumn());
 
 
     }

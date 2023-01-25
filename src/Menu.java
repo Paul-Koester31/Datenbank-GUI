@@ -28,6 +28,7 @@ public class Menu extends JFrame implements ActionListener {
 
         a = new JButton("Anzeigen");
         a.setBounds(200, 200, 150, 70);
+        a.setFont(new Font("Arial",Font.PLAIN,15));
         a.addActionListener(e -> {
             try (Connection conn = DriverManager.getConnection(url, "root", "")){
                 String table = list.getSelectedValue().toString();

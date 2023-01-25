@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="mariadb-java-client-3.1.0">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/../../../../Schule/Datenbanken/12/Hue/Projekt/mariadb-java-client-3.1.0.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>
