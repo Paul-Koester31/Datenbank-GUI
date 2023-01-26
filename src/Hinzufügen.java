@@ -1,5 +1,6 @@
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.awt.*;
 import java.awt.event.*;
 import java.sql.*;
 
@@ -17,6 +18,7 @@ public class Hinzufügen extends JFrame implements ActionListener {
 
     String spalten = "";
     String sname = "";
+    Font font = new Font("Arial",Font.PLAIN,12);
 
     public Hinzufügen(ResultSet r, String tab) {
         this.setSize(500, 600);
@@ -26,6 +28,9 @@ public class Hinzufügen extends JFrame implements ActionListener {
 
         a = new JButton("Zurück");
         a.setBounds(50, 30, 80, 50);
+        a.setFont(font);
+        a.setBackground(Color.white);
+        a.setForeground(Color.black);
         a.addActionListener(e -> {
             this.dispose();
         });
@@ -53,6 +58,9 @@ public class Hinzufügen extends JFrame implements ActionListener {
             }
             einf = new JButton("Einfügen");
             einf.setBounds(50, 480, 100, 50);
+            einf.setFont(font);
+            einf.setForeground(Color.black);
+            einf.setBackground(Color.white);
             einf.addActionListener(e -> {
                 for (int i = 1; i < z; i++) {
                     try {

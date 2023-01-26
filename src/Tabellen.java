@@ -1,9 +1,7 @@
 import javax.swing.*;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.JTableHeader;
-import java.awt.event.*;
+import javax.swing.event.*;
+import javax.swing.table.*;
+import java.awt.*;
 import java.sql.*;
 
 public class Tabellen extends JFrame implements TableModelListener {
@@ -16,15 +14,25 @@ public class Tabellen extends JFrame implements TableModelListener {
     static JTable table = new JTable(t);
     static ResultSet r = null;
     static String url = "jdbc:mariadb://127.0.0.1:3306/bundesliga";
+    TableRowSorter sorter = null;
+
+    JTextField s = null;
+    String tab = null;
+
+    JLabel such = null;
+
+    Font font = new Font("Arial",Font.PLAIN,12);
 
 
-    public Tabellen(String url, String tab) {
+    public Tabellen(String url, String ta) {
         this.setSize(500, 600);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setLayout(null);
+        tab = ta;
 
 
         einfügen(tab);
+
 
         sc = new JScrollPane(table);
         sc.setBounds(50, 100, 400, 350);
@@ -32,7 +40,10 @@ public class Tabellen extends JFrame implements TableModelListener {
         this.add(sc);
 
         a = new JButton("Zurück");
-        a.setBounds(50, 30, 80, 50);
+        a.setBounds(50, 30, 70, 50);
+        a.setForeground(Color.BLACK);
+        a.setBackground(Color.white);
+        a.setFont(font);
         a.addActionListener(e -> {
             this.dispose();
             Menu m = new Menu();
@@ -42,6 +53,9 @@ public class Tabellen extends JFrame implements TableModelListener {
 
         einf = new JButton("Einfügen");
         einf.setBounds(50, 480, 100, 50);
+        einf.setForeground(Color.BLACK);
+        einf.setBackground(Color.white);
+        einf.setFont(font);
         einf.addActionListener(e -> {
             Hinzufügen d = new Hinzufügen(r, tab);
             d.setVisible(true);
@@ -53,6 +67,9 @@ public class Tabellen extends JFrame implements TableModelListener {
 
         del = new JButton("Löschen");
         del.setBounds(180, 480, 100, 50);
+        del.setForeground(Color.BLACK);
+        del.setBackground(Color.white);
+        del.setFont(font);
         del.addActionListener(e -> {
             Löschen l = new Löschen(tab, t, table);
             table.clearSelection();
@@ -60,42 +77,17 @@ public class Tabellen extends JFrame implements TableModelListener {
         });
         this.add(del);
 
-        t.addTableModelListener(e -> {
-            int zeile = table.getSelectedRow();
-            int spalte = table.getSelectedColumn();
-            if (spalte > 0 && zeile > 0) {
-                int response = 0;
-                try {
-                    response = JOptionPane.showConfirmDialog(null, "Wollen Sie dein Eintrag in Zeile " + (zeile + 1) + ", Spalte :" + (rm.getColumnName(spalte + 1)) + " ändern?", "Bestätigen", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-                } catch (SQLException ex) {
-                    throw new RuntimeException(ex);
-                }
-                if (response == 0) {
-                    try (Connection conn = DriverManager.getConnection(url, "root", "")) {
-                        Statement s = conn.createStatement();
-                        System.out.println(t.getColumnName(spalte) + "\n" + rm.getColumnTypeName(spalte + 1));
-                        if (rm.getColumnTypeName(spalte + 1).equalsIgnoreCase("Varchar")) {
-                            ResultSet r = s.executeQuery("Update " + tab + " set " + t.getColumnName(spalte) + "= '" + t.getValueAt(zeile, spalte).toString() + "' WHERE " + t.getColumnName(0) + " = " + t.getValueAt(zeile, 0));
+        such = new JLabel("Suchen");
+        such.setBounds(300, 10, 50, 20);
+        this.add(such);
 
-                        } else if (rm.getColumnTypeName(spalte + 1).equalsIgnoreCase("Date")) {
-                            ResultSet r = s.executeQuery("Update " + tab + " set " + t.getColumnName(spalte) + "= '" + t.getValueAt(zeile, spalte).toString() + "' WHERE " + t.getColumnName(0) + " = " + t.getValueAt(zeile, 0));
+        s = new JTextField();
+        s.setBounds(300, 30, 150, 40);
+        this.add(s);
+        suchen();
 
-                        } else {
-                            ResultSet r = s.executeQuery("Update " + tab + " set " + t.getColumnName(spalte) + "= " + t.getValueAt(zeile, spalte).toString() + " WHERE " + t.getColumnName(0) + " = " + t.getValueAt(zeile, 0));
+        t.addTableModelListener(this);
 
-                        }
-                        table.clearSelection();
-                    } catch (SQLException f) {
-                        throw new RuntimeException(f);
-                    }
-                    t.fireTableDataChanged();
-                } else {
-                    table.clearSelection();
-                }
-
-            }
-
-        });
     }
 
     public static void einfügen(String tab) {
@@ -133,10 +125,72 @@ public class Tabellen extends JFrame implements TableModelListener {
 
     }
 
+    public void suchen() {
+        sorter = new TableRowSorter(t);
+        table.setRowSorter(sorter);
+        s.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                search(s.getText());
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                search(s.getText());
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                search(s.getText());
+            }
+
+            public void search(String st) {
+                if (st.length() == 0) {
+                    sorter.setRowFilter(null);
+                } else {
+                    sorter.setRowFilter(RowFilter.regexFilter(st));
+                }
+            }
+        });
+    }
+
     @Override
     public void tableChanged(TableModelEvent e) {
-        System.out.println(table.getSelectedRow() + "" + table.getSelectedColumn());
+        int zeile = table.getSelectedRow();
+        int spalte = table.getSelectedColumn();
+        if (spalte > 0 && zeile > 0) {
+            int response = 0;
+            try {
+                response = JOptionPane.showConfirmDialog(null, "Wollen Sie dein Eintrag in Zeile " + (zeile + 1) + ", Spalte :" + (rm.getColumnName(spalte + 1)) + " ändern?", "Bestätigen", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
+            if (response == 0) {
+                try (Connection conn = DriverManager.getConnection(url, "root", "")) {
+                    Statement s = conn.createStatement();
+                    System.out.println(t.getColumnName(spalte) + "\n" + rm.getColumnTypeName(spalte + 1));
+                    if (rm.getColumnTypeName(spalte + 1).equalsIgnoreCase("Varchar")) {
+                        ResultSet r = s.executeQuery("Update " + tab + " set " + t.getColumnName(spalte) + "= '" + t.getValueAt(zeile, spalte).toString() + "' WHERE " + t.getColumnName(0) + " = " + t.getValueAt(zeile, 0));
 
+                    } else if (rm.getColumnTypeName(spalte + 1).equalsIgnoreCase("Date")) {
+                        ResultSet r = s.executeQuery("Update " + tab + " set " + t.getColumnName(spalte) + "= '" + t.getValueAt(zeile, spalte).toString() + "' WHERE " + t.getColumnName(0) + " = " + t.getValueAt(zeile, 0));
+
+                    } else {
+                        ResultSet r = s.executeQuery("Update " + tab + " set " + t.getColumnName(spalte) + "= " + t.getValueAt(zeile, spalte).toString() + " WHERE " + t.getColumnName(0) + " = " + t.getValueAt(zeile, 0));
+
+                    }
+                    table.clearSelection();
+                } catch (SQLException f) {
+                    throw new RuntimeException(f);
+                }
+                t.fireTableDataChanged();
+            } else {
+                table.clearSelection();
+            }
+
+        }
 
     }
+
 }
+
