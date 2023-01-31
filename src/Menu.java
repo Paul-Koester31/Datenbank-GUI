@@ -6,51 +6,80 @@ import java.sql.*;
 public class Menu extends JFrame implements ActionListener {
     JScrollPane sc = null;
     JButton a = null;
-
-    JLabel i = null;
+    JButton v = null;
     JList list = null;
-    ImageIcon img = null;
-
     String url = "jdbc:mariadb://127.0.0.1:3306/bundesliga";
-
-
+    String table = null;
     public static void main(String[] args) {
         Menu m = new Menu();
         m.setVisible(true);
     }
+
     public Menu() {
         this.setSize(500, 600);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setLayout(null);
         this.setBackground(Color.WHITE);
 
+        JLabel lbl = new JLabel("");
+        ImageIcon img = new ImageIcon(new ImageIcon(Menu.class.getResource("/image/Bundesiga.jfif")).getImage());
+        lbl.setIcon(img);
+        lbl.setBounds(150, 50, 200,202);
+        this.getContentPane().add(lbl);
+        this.add(lbl);
 
+        v = new JButton("Einzelansicht");
+        v.setBounds(200, 420, 100, 60);
+        v.setFont(new Font("Arial", Font.PLAIN, 11));
+        v.setForeground(Color.black);
+        v.setBackground(Color.white);
+        v.addActionListener(e -> {
+            table = list.getSelectedValue().toString();
+            Einzelansicht a = new Einzelansicht(table);
+            a.setVisible(true);
+            this.dispose();
+
+        });
 
         a = new JButton("Anzeigen");
-        a.setBounds(200, 200, 150, 70);
-        a.setFont(new Font("Arial",Font.PLAIN,15));
+        a.setBounds(200, 350, 90, 60);
+        a.setFont(new Font("Arial", Font.PLAIN, 12));
+        a.setForeground(Color.black);
+        a.setBackground(Color.white);
         a.addActionListener(e -> {
-            try (Connection conn = DriverManager.getConnection(url, "root", "")){
-                String table = list.getSelectedValue().toString();
-                Tabellen t = new Tabellen(url,table);
-                t.setVisible(true);
-                t.setTitle(list.getSelectedValue().toString());
+            try (Connection conn = DriverManager.getConnection(url, "root", "")) {
+                if (list.isSelectionEmpty()) {
+                    JOptionPane.showMessageDialog(null, "Wählen sie eine Tabelle aus!");
+                } else {
+                    table = list.getSelectedValue().toString();
+                    Tabellen t = new Tabellen(url, table);
+                    t.setVisible(true);
+                    t.setTitle(list.getSelectedValue().toString());
+                    this.dispose();
+                }
             } catch (SQLException ex) {
                 throw new RuntimeException(ex);
             }
-            this.dispose();
+
         });
         this.add(a);
 
 
         DefaultListModel liste = new DefaultListModel();
         list = new JList(liste);
+        list.addListSelectionListener(e -> {
+            if (list.getSelectedValue().toString().equalsIgnoreCase("Verein") || list.getSelectedValue().toString().equalsIgnoreCase("test")) {
+                this.add(v);
+
+            } else
+                this.remove(v);
+        });
         sc = new JScrollPane();
         sc.setViewportView(list);
-        sc.setBounds(30, 150, 150, 200);
+        sc.setBounds(30, 300, 150, 200);
         this.add(sc);
 
-        try (Connection conn = DriverManager.getConnection(url, "root", "")){
+        try (Connection conn = DriverManager.getConnection(url, "root", "")) {
             Statement s = conn.createStatement();
             ResultSet r = s.executeQuery("Show Tables");
             while (r.next()) {
@@ -64,10 +93,7 @@ public class Menu extends JFrame implements ActionListener {
 
     public void paint(Graphics g) {
         super.paint(g);
-        img = new ImageIcon("src/image/Bundesliga.jpg");
-        i = new JLabel(img);
-        i.setBounds(150, 280, 200, 100);
-        this.add(i);
+
         repaint();
     }
 
