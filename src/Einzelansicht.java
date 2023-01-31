@@ -32,7 +32,10 @@ public class Einzelansicht extends JFrame implements TableModelListener {
         this.setSize(500, 400);
         this.setResizable(false);
         this.setLayout(null);
+        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         tab = ta;
+        this.setTitle(tab);
+
 
         try (Connection conn = DriverManager.getConnection(url, "root", "")) {
             Statement s = conn.createStatement();
@@ -45,7 +48,7 @@ public class Einzelansicht extends JFrame implements TableModelListener {
         }
 
         vor = new JButton("Weiter");
-        vor.setBounds(300, 150, 90, 50);
+        vor.setBounds(350, 150, 90, 50);
         vor.setFont(font);
         vor.setBackground(Color.white);
         vor.setForeground(Color.black);
@@ -61,13 +64,13 @@ public class Einzelansicht extends JFrame implements TableModelListener {
         this.add(vor);
 
         zur = new JButton("Letzte");
-        zur.setBounds(150, 150, 90, 50);
+        zur.setBounds(80, 150, 90, 50);
         zur.setFont(font);
         zur.setBackground(Color.white);
         zur.setForeground(Color.black);
         zur.addActionListener(e -> {
-            if(i>1){
-             i--;
+            if (i > 1) {
+                i--;
             }
             try {
                 sql = "Select * From " + tab + " Where " + rm.getColumnName(1) + " =" + i;
@@ -85,7 +88,7 @@ public class Einzelansicht extends JFrame implements TableModelListener {
         this.add(sc);
 
         a = new JButton("Zurück");
-        a.setBounds(50, 30, 70, 50);
+        a.setBounds(50, 30, 80, 50);
         a.setForeground(Color.BLACK);
         a.setBackground(Color.white);
         a.setFont(font);
@@ -116,7 +119,7 @@ public class Einzelansicht extends JFrame implements TableModelListener {
         del.setBackground(Color.white);
         del.setFont(font);
         del.addActionListener(e -> {
-          System.out.println(t.getValueAt(0,0));
+            System.out.println(t.getValueAt(0, 0));
             String wh = t.getValueAt(0, 0).toString();
             int response = JOptionPane.showConfirmDialog(null, "Wollen Sie den Eintrag löschen?", "Bestätigen", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
             if (response == 0) {
@@ -210,16 +213,17 @@ public class Einzelansicht extends JFrame implements TableModelListener {
                 } else {
                     try {
                         for (int j = 1; j <= rm.getColumnCount(); j++) {
-                            System.out.println(sq);
                             if (j == rm.getColumnCount()) {
                                 sq = sq + rm.getColumnName(j) + " LIKE '%" + st + "%'";
                             } else {
                                 sq = sq + rm.getColumnName(j) + " LIKE '%" + st + "%' or ";
                             }
                         }
-                        sql="Select * FROm "+tab+ " Where "+sq;
+                        sql = "SELECT * FROM " + tab + " WHERE " + sq;
                         System.out.println(sql);
-                        einfügen(tab,sql);
+                        einfügen(tab, sql);
+                        sq = "";
+                        sql = "";
 
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
@@ -233,7 +237,7 @@ public class Einzelansicht extends JFrame implements TableModelListener {
     public void tableChanged(TableModelEvent e) {
         int zeile = table.getSelectedRow();
         int spalte = table.getSelectedColumn();
-        if (spalte > 0 && zeile > 0) {
+        if (spalte > 0) {
             int response = 0;
             try {
                 response = JOptionPane.showConfirmDialog(null, "Wollen Sie dein Eintrag in Zeile " + (zeile + 1) + ", Spalte :" + (rm.getColumnName(spalte + 1)) + " ändern?", "Bestätigen", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);

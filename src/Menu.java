@@ -20,6 +20,7 @@ public class Menu extends JFrame implements ActionListener {
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setLayout(null);
         this.setBackground(Color.WHITE);
+        this.setTitle("Bundesliga");
 
         JLabel lbl = new JLabel("");
         ImageIcon img = new ImageIcon(new ImageIcon(Menu.class.getResource("/image/Bundesiga.jfif")).getImage());
@@ -68,7 +69,7 @@ public class Menu extends JFrame implements ActionListener {
         DefaultListModel liste = new DefaultListModel();
         list = new JList(liste);
         list.addListSelectionListener(e -> {
-            if (list.getSelectedValue().toString().equalsIgnoreCase("Verein") || list.getSelectedValue().toString().equalsIgnoreCase("test")) {
+            if (list.getSelectedValue().toString().equalsIgnoreCase("Verein") || list.getSelectedValue().toString().equalsIgnoreCase("spieler")) {
                 this.add(v);
 
             } else

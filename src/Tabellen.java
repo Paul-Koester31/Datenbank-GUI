@@ -40,7 +40,7 @@ public class Tabellen extends JFrame implements TableModelListener {
         this.add(sc);
 
         a = new JButton("Zurück");
-        a.setBounds(50, 30, 70, 50);
+        a.setBounds(50, 30, 80, 50);
         a.setForeground(Color.BLACK);
         a.setBackground(Color.white);
         a.setFont(font);
@@ -158,7 +158,8 @@ public class Tabellen extends JFrame implements TableModelListener {
     public void tableChanged(TableModelEvent e) {
         int zeile = table.getSelectedRow();
         int spalte = table.getSelectedColumn();
-        if (spalte > 0 && zeile > 0) {
+        System.out.println(zeile+" "+ spalte);
+        if (spalte > 0 || zeile > 0) {
             int response = 0;
             try {
                 response = JOptionPane.showConfirmDialog(null, "Wollen Sie dein Eintrag in Zeile " + (zeile + 1) + ", Spalte :" + (rm.getColumnName(spalte + 1)) + " ändern?", "Bestätigen", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
