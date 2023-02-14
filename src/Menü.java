@@ -3,7 +3,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.sql.*;
 
-public class Menu extends JFrame implements ActionListener {
+public class Menü extends JFrame implements ActionListener {
     JScrollPane sc = null;
     JButton a = null;
     JButton v = null;
@@ -11,11 +11,11 @@ public class Menu extends JFrame implements ActionListener {
     String url = "jdbc:mariadb://127.0.0.1:3306/bundesliga";
     String table = null;
     public static void main(String[] args) {
-        Menu m = new Menu();
+        Menü m = new Menü();
         m.setVisible(true);
     }
 
-    public Menu() {
+    public Menü() {
         this.setSize(500, 600);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setLayout(null);

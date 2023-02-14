@@ -2,6 +2,7 @@ import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.Menu;
 import java.sql.*;
 
 public class Einzelansicht extends JFrame implements TableModelListener {
@@ -26,6 +27,9 @@ public class Einzelansicht extends JFrame implements TableModelListener {
     Font font = new Font("Arial", Font.PLAIN, 12);
     String sql = null;
     String sq = "";
+    JMenuBar bar = null;
+    Menu men = null;
+
     static int i = 0;
 
     public Einzelansicht(String ta) {
@@ -94,7 +98,7 @@ public class Einzelansicht extends JFrame implements TableModelListener {
         a.setFont(font);
         a.addActionListener(e -> {
             this.dispose();
-            Menu m = new Menu();
+            Menü m = new Menü();
             m.setVisible(true);
         });
         this.add(a);
