@@ -46,7 +46,7 @@ public class Tabellen extends JFrame implements TableModelListener {
         a.setFont(font);
         a.addActionListener(e -> {
             this.dispose();
-            Menu m = new Menu();
+            Menü m = new Menü();
             m.setVisible(true);
         });
         this.add(a);

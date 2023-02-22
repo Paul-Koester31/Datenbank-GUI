@@ -23,7 +23,7 @@ public class Menü extends JFrame implements ActionListener {
         this.setTitle("Bundesliga");
 
         JLabel lbl = new JLabel("");
-        ImageIcon img = new ImageIcon(new ImageIcon(Menu.class.getResource("/image/Bundesiga.jfif")).getImage());
+        ImageIcon img = new ImageIcon(new ImageIcon(Menü.class.getResource("/image/Bundesiga.jfif")).getImage());
         lbl.setIcon(img);
         lbl.setBounds(150, 50, 200,202);
         this.getContentPane().add(lbl);
@@ -94,7 +94,6 @@ public class Menü extends JFrame implements ActionListener {
 
     public void paint(Graphics g) {
         super.paint(g);
-
         repaint();
     }
 

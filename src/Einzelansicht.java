@@ -3,9 +3,11 @@ import javax.swing.event.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.Menu;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.sql.*;
 
-public class Einzelansicht extends JFrame implements TableModelListener {
+public class Einzelansicht extends JFrame implements TableModelListener, ActionListener {
 
     JScrollPane sc = null;
     JButton a = null;
@@ -28,9 +30,11 @@ public class Einzelansicht extends JFrame implements TableModelListener {
     String sql = null;
     String sq = "";
     JMenuBar bar = null;
-    Menu men = null;
+    JMenu dat = null;
+    JMenu bew = null;
+    JMenu adm = null;
+    JMenuItem i1, i2, i3, i4, i5, i6, i7;
 
-    static int i = 0;
 
     public Einzelansicht(String ta) {
         this.setSize(500, 400);
@@ -40,13 +44,64 @@ public class Einzelansicht extends JFrame implements TableModelListener {
         tab = ta;
         this.setTitle(tab);
 
+        bar = new JMenuBar();
+        dat = new JMenu("Datei");
+        bew = new JMenu("Bewegen");
+        adm = new JMenu("Administration");
+        i1 = new JMenuItem("Programm schließen");
+        i1.addActionListener(e -> {
+            this.dispose();
+            Menü m = new Menü();
+            m.setVisible(true);
+        });
+        i1.setActionCommand("close");
+
+        i2 = new JMenuItem("Nächster Datensatz");
+        i2.addActionListener(this);
+        i2.setActionCommand("vor");
+
+        i3 = new JMenuItem("Vorheriger Datensatz");
+        i3.addActionListener(this);
+        i3.setActionCommand("zur");
+
+        i4 = new JMenuItem("Suchen");
+        i4.addActionListener(e -> {
+            s.setText(JOptionPane.showInputDialog("Wonach wollen Sie suchen?"));
+        });
+
+        i5 = new JMenuItem("Einfügen");
+        i5.addActionListener(this);
+        i5.setActionCommand("einf");
+
+        i6 = new JMenuItem("Ändern");
+        i6.addActionListener(this);
+        i6.setActionCommand("änd");
+
+        i7 = new JMenuItem("Löschen");
+        i7.addActionListener(this);
+        i7.setActionCommand("lösch");
+
+        dat.add(i1);
+        bew.add(i2);
+        bew.add(i3);
+        adm.add(i4);
+        adm.add(i5);
+        adm.add(i6);
+        adm.add(i7);
+        bar.add(dat);
+        bar.add(bew);
+        bar.add(adm);
+        this.setJMenuBar(bar);
+
 
         try (Connection conn = DriverManager.getConnection(url, "root", "")) {
             Statement s = conn.createStatement();
             r = s.executeQuery("Select * FROM " + tab);
             rm = r.getMetaData();
-            sql = "Select * From " + tab + " Where " + rm.getColumnName(1) + " =" + 1;
-            einfügen(tab, sql);
+            sql = "Select * From " + tab;
+            r.first();
+            einfügen(r);
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -56,15 +111,8 @@ public class Einzelansicht extends JFrame implements TableModelListener {
         vor.setFont(font);
         vor.setBackground(Color.white);
         vor.setForeground(Color.black);
-        vor.addActionListener(e -> {
-            i++;
-            try {
-                sql = "Select * From " + tab + " Where " + rm.getColumnName(1) + " =" + i;
-                einfügen(tab, sql);
-            } catch (SQLException ex) {
-                throw new RuntimeException(ex);
-            }
-        });
+        vor.addActionListener(this);
+        vor.setActionCommand("vor");
         this.add(vor);
 
         zur = new JButton("Letzte");
@@ -72,17 +120,8 @@ public class Einzelansicht extends JFrame implements TableModelListener {
         zur.setFont(font);
         zur.setBackground(Color.white);
         zur.setForeground(Color.black);
-        zur.addActionListener(e -> {
-            if (i > 1) {
-                i--;
-            }
-            try {
-                sql = "Select * From " + tab + " Where " + rm.getColumnName(1) + " =" + i;
-                einfügen(tab, sql);
-            } catch (SQLException ex) {
-                throw new RuntimeException(ex);
-            }
-        });
+        zur.addActionListener(this);
+        zur.setActionCommand("zur");
         this.add(zur);
 
 
@@ -96,11 +135,8 @@ public class Einzelansicht extends JFrame implements TableModelListener {
         a.setForeground(Color.BLACK);
         a.setBackground(Color.white);
         a.setFont(font);
-        a.addActionListener(e -> {
-            this.dispose();
-            Menü m = new Menü();
-            m.setVisible(true);
-        });
+        a.addActionListener(this);
+        a.setActionCommand("close");
         this.add(a);
 
         einf = new JButton("Einfügen");
@@ -108,12 +144,8 @@ public class Einzelansicht extends JFrame implements TableModelListener {
         einf.setForeground(Color.BLACK);
         einf.setBackground(Color.white);
         einf.setFont(font);
-        einf.addActionListener(e -> {
-            Hinzufügen d = new Hinzufügen(r, tab);
-            d.setVisible(true);
-            this.setFocusable(false);
-
-        });
+        einf.addActionListener(this);
+        einf.setActionCommand("einf");
         this.add(einf);
 
 
@@ -122,28 +154,8 @@ public class Einzelansicht extends JFrame implements TableModelListener {
         del.setForeground(Color.BLACK);
         del.setBackground(Color.white);
         del.setFont(font);
-        del.addActionListener(e -> {
-            System.out.println(t.getValueAt(0, 0));
-            String wh = t.getValueAt(0, 0).toString();
-            int response = JOptionPane.showConfirmDialog(null, "Wollen Sie den Eintrag löschen?", "Bestätigen", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-            if (response == 0) {
-                try (Connection conn = DriverManager.getConnection(url, "root", "")) {
-                    Statement s = conn.createStatement();
-                    ResultSet r = s.executeQuery("DELETE  From " + tab + " WHERE " + t.getColumnName(0) + "=" + wh);
-
-                } catch (SQLException ex) {
-                    throw new RuntimeException(ex);
-                }
-                Tabellen.einfügen(tab);
-            } else {
-
-            }
-            Einzelansicht.table.clearSelection();
-            table.clearSelection();
-            t.removeRow(0);
-            t.fireTableDataChanged();
-
-        });
+        del.addActionListener(this);
+        del.setActionCommand("lösch");
         this.add(del);
 
         such = new JLabel("Suchen");
@@ -159,17 +171,12 @@ public class Einzelansicht extends JFrame implements TableModelListener {
 
     }
 
-    public static void einfügen(String tab, String sql) {
+    public static void einfügen(ResultSet r) {
         String[][] temp = {{""}};
 
-
-        try (Connection conn = DriverManager.getConnection(url, "root", "")) {
-            Statement s = conn.createStatement();
-            r = s.executeQuery(sql);
+        try {
             rm = r.getMetaData();
-            rm.getColumnCount();
             String column[] = new String[rm.getColumnCount()];
-
 
             for (int i = 1; i <= rm.getColumnCount(); i++) {
                 column[i - 1] = rm.getColumnName(i);
@@ -179,13 +186,9 @@ public class Einzelansicht extends JFrame implements TableModelListener {
             t.removeRow(0);
 
             Object rows[] = new Object[rm.getColumnCount()];
-            while (r.next()) {
-                for (int i = 1; i <= rm.getColumnCount(); i++) {
-                    rows[i - 1] = r.getString(i);
-                }
+            for (int i = 1; i <= rm.getColumnCount(); i++) {
+                rows[i - 1] = r.getString(i);
             }
-
-
             t.addRow(rows);
             t.fireTableDataChanged();
 
@@ -225,7 +228,11 @@ public class Einzelansicht extends JFrame implements TableModelListener {
                         }
                         sql = "SELECT * FROM " + tab + " WHERE " + sq;
                         System.out.println(sql);
-                        einfügen(tab, sql);
+                        Connection conn = DriverManager.getConnection(url, "root", "");
+                        Statement s = conn.createStatement();
+                        r = s.executeQuery(sql);
+                        r.first();
+                        einfügen(r);
                         sq = "";
                         sql = "";
 
@@ -275,4 +282,65 @@ public class Einzelansicht extends JFrame implements TableModelListener {
 
     }
 
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        String command = e.getActionCommand();
+        switch (command) {
+            case "vor":
+                try {
+                    if (r.next()) {
+                        einfügen(r);
+                    }
+                } catch (SQLException ex) {
+                    throw new RuntimeException(ex);
+                }
+                break;
+            case "zur":
+                try {
+                    if (r.previous()) {
+                        einfügen(r);
+                    }
+                } catch (SQLException ex) {
+                    throw new RuntimeException(ex);
+                }
+                break;
+            case "einf":
+                Hinzufügen d = new Hinzufügen(r, tab);
+                d.setVisible(true);
+                this.setFocusable(false);
+                this.setFocusableWindowState(false);
+                break;
+            case "änd":
+                break;
+            case "lösch":
+                System.out.println(t.getValueAt(0, 0));
+                String wh = t.getValueAt(0, 0).toString();
+                int response = JOptionPane.showConfirmDialog(null, "Wollen Sie den Eintrag löschen?", "Bestätigen", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                if (response == 0) {
+                    try (Connection conn = DriverManager.getConnection(url, "root", "")) {
+                        Statement s = conn.createStatement();
+                        ResultSet r = s.executeQuery("DELETE  From " + tab + " WHERE " + t.getColumnName(0) + "=" + wh);
+                        ResultSet r2 = s.executeQuery("Select * from " + tab);
+                        r2.previous();
+                        einfügen(r2);
+                    } catch (SQLException ex) {
+                        throw new RuntimeException(ex);
+                    }
+
+                } else {
+
+                }
+                table.clearSelection();
+                t.removeRow(0);
+                t.fireTableDataChanged();
+                break;
+            case "close":
+                this.dispose();
+                Menü m = new Menü();
+                m.setVisible(true);
+                break;
+
+        }
+
+    }
 }
