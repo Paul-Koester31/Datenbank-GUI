@@ -307,8 +307,8 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
             case "einf":
                 Hinzufügen d = new Hinzufügen(r, tab);
                 d.setVisible(true);
+                this.setAutoRequestFocus(false);
                 this.setFocusable(false);
-                this.setFocusableWindowState(false);
                 break;
             case "änd":
                 break;
