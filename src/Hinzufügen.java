@@ -4,27 +4,24 @@ import java.awt.*;
 import java.awt.event.*;
 import java.sql.*;
 
-public class Hinzufügen extends JFrame implements ActionListener {
+public class Hinzufügen extends Dialog implements ActionListener {
+    JFrame frame;
     JButton a = null;
     ResultSetMetaData rm = null;
-
-
     JButton einf = null;
-
-    JTable table = null;
-    DefaultTableModel t = null;
-
     String url = "jdbc:mariadb://127.0.0.1:3306/bundesliga";
-
     String spalten = "";
     String sname = "";
-    Font font = new Font("Arial",Font.PLAIN,12);
+    Font font = new Font("Arial", Font.PLAIN, 12);
 
-    public Hinzufügen(ResultSet r, String tab) {
+
+    public Hinzufügen(ResultSet r, String tab, JFrame owner,boolean modal) {
+        super(owner,modal);
+
+
         this.setSize(500, 600);
         this.setLayout(null);
-
-
+        owner.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
         a = new JButton("Zurück");
         a.setBounds(50, 30, 80, 50);
@@ -64,17 +61,6 @@ public class Hinzufügen extends JFrame implements ActionListener {
             einf.addActionListener(e -> {
                 for (int i = 1; i < z; i++) {
                     try {
-                        System.out.println(b[i].getText());
-                        if (b[i].getText().length() == 0) {
-                            int response = JOptionPane.showConfirmDialog(null, "Soll der Wert für " + rm.getColumnName(i + 1) + " 'NULL' übernommen werden?", "Bestätigen", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-                            System.out.println(response);
-                            if (response == 0) {
-                                //null
-                            } else {
-                                break;
-                            }
-                        }
-
                         if (i == z - 1) {
                             spalten = spalten + "'" + b[i].getText() + "'";
                             sname = sname + rm.getColumnName(i + 1);
@@ -82,6 +68,18 @@ public class Hinzufügen extends JFrame implements ActionListener {
                             spalten = spalten + "'" + b[i].getText() + "',";
                             sname = sname + rm.getColumnName(i + 1) + ",";
                         }
+                        System.out.println(b[i].getText());
+                        if (b[i].getText().length() == 0) {
+                            int response = JOptionPane.showConfirmDialog(null, "Soll der Wert für " + rm.getColumnName(i + 1) + " 'NULL' übernommen werden?", "Bestätigen", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                            System.out.println(response);
+                            if (response == 0) {
+                                spalten= spalten+" Null";
+                            } else {
+                                break;
+                            }
+                        }
+
+
 
 
                     } catch (Exception ex) {
@@ -91,13 +89,13 @@ public class Hinzufügen extends JFrame implements ActionListener {
                 System.out.println(sname);
                 System.out.println(spalten);
                 String sql = "Insert into " + tab + "(" + sname + ") Values (" + spalten + ")";
+                System.out.println(sql);
                 Connection conn = null;
                 try {
                     conn = DriverManager.getConnection(url, "root", "");
                     Statement s = conn.createStatement();
                     ResultSet a = s.executeQuery(sql);
                     this.dispose();
-                    Tabellen.einfügen(tab);
                 } catch (SQLException ex) {
                     throw new RuntimeException(ex);
                 }

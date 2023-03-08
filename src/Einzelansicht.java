@@ -2,7 +2,6 @@ import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.Menu;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.*;
@@ -35,9 +34,14 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
     JMenu adm = null;
     JMenuItem i1, i2, i3, i4, i5, i6, i7;
 
+    JTable detail;
+    JScrollPane dsc;
+    int vid=1;
+
+
 
     public Einzelansicht(String ta) {
-        this.setSize(500, 400);
+        this.setSize(600, 800);
         this.setResizable(false);
         this.setLayout(null);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -101,6 +105,7 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
             sql = "Select * From " + tab;
             r.first();
             einfügen(r);
+            detailtab(vid);
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -140,7 +145,7 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
         this.add(a);
 
         einf = new JButton("Einfügen");
-        einf.setBounds(150, 280, 100, 50);
+        einf.setBounds(470, 50, 100, 50);
         einf.setForeground(Color.BLACK);
         einf.setBackground(Color.white);
         einf.setFont(font);
@@ -150,7 +155,7 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
 
 
         del = new JButton("Löschen");
-        del.setBounds(300, 280, 100, 50);
+        del.setBounds(470, 120, 100, 50);
         del.setForeground(Color.BLACK);
         del.setBackground(Color.white);
         del.setFont(font);
@@ -168,6 +173,10 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
         suchen();
 
         t.addTableModelListener(this);
+
+
+
+
 
     }
 
@@ -233,6 +242,8 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
                         r = s.executeQuery(sql);
                         r.first();
                         einfügen(r);
+                        vid=r.getInt("V_ID");
+                        detailtab(vid);
                         sq = "";
                         sql = "";
 
@@ -290,6 +301,8 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
                 try {
                     if (r.next()) {
                         einfügen(r);
+                        vid=r.getInt("V_ID");
+                        detailtab(vid);
                     }
                 } catch (SQLException ex) {
                     throw new RuntimeException(ex);
@@ -299,16 +312,17 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
                 try {
                     if (r.previous()) {
                         einfügen(r);
+                        vid=r.getInt("V_ID");
+                        detailtab(vid);
                     }
                 } catch (SQLException ex) {
                     throw new RuntimeException(ex);
                 }
                 break;
             case "einf":
-                Hinzufügen d = new Hinzufügen(r, tab);
+                Hinzufügen d = new Hinzufügen(r, tab,this,true);
                 d.setVisible(true);
-                this.setFocusable(false);
-                this.setFocusableWindowState(false);
+
                 break;
             case "änd":
                 break;
@@ -342,5 +356,13 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
 
         }
 
+    }
+    public void detailtab(int vid){
+
+        detail = new JTable(Datail.detailmodel(vid,url));
+        dsc = new JScrollPane(detail);
+        dsc.setBounds(20, 250, 550, 400);
+        dsc.getHorizontalScrollBar();
+        this.add(dsc);
     }
 }

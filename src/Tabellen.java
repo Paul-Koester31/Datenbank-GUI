@@ -57,7 +57,7 @@ public class Tabellen extends JFrame implements TableModelListener {
         einf.setBackground(Color.white);
         einf.setFont(font);
         einf.addActionListener(e -> {
-            Hinzufügen d = new Hinzufügen(r, tab);
+            Hinzufügen d = new Hinzufügen(r, tab,this,true);
             d.setVisible(true);
             this.setFocusable(false);
 
