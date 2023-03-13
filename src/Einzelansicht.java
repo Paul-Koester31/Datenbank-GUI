@@ -360,6 +360,7 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
     public void detailtab(int vid){
 
         detail = new JTable(Datail.detailmodel(vid,url));
+        detail.setAutoCreateRowSorter(true);
         dsc = new JScrollPane(detail);
         dsc.setBounds(20, 250, 550, 400);
         dsc.getHorizontalScrollBar();
