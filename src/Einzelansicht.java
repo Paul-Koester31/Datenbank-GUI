@@ -38,7 +38,8 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
 
     static JTable detail;
     static JScrollPane dsc;
-     int vid = 1;
+    static int vid = 1;
+    static DefaultTableModel dtm = new DefaultTableModel();
 
 
     public Einzelansicht(String ta) {
@@ -175,6 +176,13 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
 
         t.addTableModelListener(this);
 
+        detail = new JTable(dtm);
+        detail.setAutoCreateRowSorter(true);
+        dsc = new JScrollPane(detail);
+        dsc.setBounds(20, 250, 550, 400);
+        dsc.getHorizontalScrollBar();
+        this.add(dsc);
+
 
     }
 
@@ -198,6 +206,9 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
             }
             t.addRow(rows);
             t.fireTableDataChanged();
+            vid = r.getInt(1);
+            detailtab(vid);
+            dtm.fireTableDataChanged();
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -210,9 +221,9 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
         s.addKeyListener(new KeyListener() {
             @Override
             public void keyTyped(KeyEvent e) {
-                if(e.getKeyChar()==KeyEvent.VK_ENTER){
+                if (e.getKeyChar() == KeyEvent.VK_ENTER) {
                     try {
-                        r = Suchen.search(s.getText(),r);
+                        r = Suchen.search(s.getText(), r);
                         s.setText("");
                         einfügen(r);
                         vid = r.getInt("V_ID");
@@ -283,7 +294,6 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
                     if (r.next()) {
                         einfügen(r);
                         vid = r.getInt("V_ID");
-                        detailtab(vid);
                     }
                 } catch (SQLException ex) {
                     throw new RuntimeException(ex);
@@ -294,7 +304,6 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
                     if (r.previous()) {
                         einfügen(r);
                         vid = r.getInt("V_ID");
-                        detailtab(vid);
                     }
                 } catch (SQLException ex) {
                     throw new RuntimeException(ex);
@@ -339,14 +348,13 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
 
     }
 
-    public void detailtab(int vid) {
+    public static void detailtab(int vid) {
+        dtm = Datail.detailmodel(vid, url);
+        dtm.fireTableDataChanged();
 
-        detail = new JTable(Datail.detailmodel(vid, url));
-        detail.setAutoCreateRowSorter(true);
-        dsc = new JScrollPane(detail);
-        dsc.setBounds(20, 250, 550, 400);
-        dsc.getHorizontalScrollBar();
-        this.add(dsc);
+
+        System.out.println("detail ="+vid);
+
 
     }
 }
