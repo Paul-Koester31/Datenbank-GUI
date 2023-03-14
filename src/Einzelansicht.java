@@ -1,9 +1,12 @@
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.DefaultTableModel;
+import javax.xml.crypto.dsig.keyinfo.KeyName;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.sql.*;
 
 public class Einzelansicht extends JFrame implements TableModelListener, ActionListener {
@@ -27,17 +30,15 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
 
     Font font = new Font("Arial", Font.PLAIN, 12);
     String sql = null;
-    String sq = "";
     JMenuBar bar = null;
     JMenu dat = null;
     JMenu bew = null;
     JMenu adm = null;
     JMenuItem i1, i2, i3, i4, i5, i6, i7;
 
-    JTable detail;
-    JScrollPane dsc;
-    int vid=1;
-
+    static JTable detail;
+    static JScrollPane dsc;
+     int vid = 1;
 
 
     public Einzelansicht(String ta) {
@@ -175,9 +176,6 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
         t.addTableModelListener(this);
 
 
-
-
-
     }
 
     public static void einfügen(ResultSet r) {
@@ -208,49 +206,32 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
     }
 
     public void suchen() {
-        s.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                search(s.getText());
-            }
 
+        s.addKeyListener(new KeyListener() {
             @Override
-            public void removeUpdate(DocumentEvent e) {
-                search(s.getText());
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                search(s.getText());
-            }
-
-            public void search(String st) {
-                if (st.length() == 0) {
-                } else {
+            public void keyTyped(KeyEvent e) {
+                if(e.getKeyChar()==KeyEvent.VK_ENTER){
                     try {
-                        for (int j = 1; j <= rm.getColumnCount(); j++) {
-                            if (j == rm.getColumnCount()) {
-                                sq = sq + rm.getColumnName(j) + " LIKE '%" + st + "%'";
-                            } else {
-                                sq = sq + rm.getColumnName(j) + " LIKE '%" + st + "%' or ";
-                            }
-                        }
-                        sql = "SELECT * FROM " + tab + " WHERE " + sq;
-                        System.out.println(sql);
-                        Connection conn = DriverManager.getConnection(url, "root", "");
-                        Statement s = conn.createStatement();
-                        r = s.executeQuery(sql);
-                        r.first();
+                        r = Suchen.search(s.getText(),r);
+                        s.setText("");
                         einfügen(r);
-                        vid=r.getInt("V_ID");
+                        vid = r.getInt("V_ID");
                         detailtab(vid);
-                        sq = "";
-                        sql = "";
-
-                    } catch (SQLException e) {
-                        throw new RuntimeException(e);
+                    } catch (SQLException ex) {
+                        throw new RuntimeException(ex);
                     }
+
                 }
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+
             }
         });
     }
@@ -301,7 +282,7 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
                 try {
                     if (r.next()) {
                         einfügen(r);
-                        vid=r.getInt("V_ID");
+                        vid = r.getInt("V_ID");
                         detailtab(vid);
                     }
                 } catch (SQLException ex) {
@@ -312,7 +293,7 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
                 try {
                     if (r.previous()) {
                         einfügen(r);
-                        vid=r.getInt("V_ID");
+                        vid = r.getInt("V_ID");
                         detailtab(vid);
                     }
                 } catch (SQLException ex) {
@@ -320,7 +301,7 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
                 }
                 break;
             case "einf":
-                Hinzufügen d = new Hinzufügen(r, tab,this,true);
+                Hinzufügen d = new Hinzufügen(r, tab, this, true);
                 d.setVisible(true);
 
                 break;
@@ -357,13 +338,15 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
         }
 
     }
-    public void detailtab(int vid){
 
-        detail = new JTable(Datail.detailmodel(vid,url));
+    public void detailtab(int vid) {
+
+        detail = new JTable(Datail.detailmodel(vid, url));
         detail.setAutoCreateRowSorter(true);
         dsc = new JScrollPane(detail);
         dsc.setBounds(20, 250, 550, 400);
         dsc.getHorizontalScrollBar();
         this.add(dsc);
+
     }
 }

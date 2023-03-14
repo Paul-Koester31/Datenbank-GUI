@@ -1,8 +1,8 @@
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
 import java.sql.*;
+import static javax.swing.WindowConstants.DISPOSE_ON_CLOSE;
 
 public class Hinzufügen extends Dialog implements ActionListener {
     JFrame frame;
@@ -21,7 +21,6 @@ public class Hinzufügen extends Dialog implements ActionListener {
 
         this.setSize(500, 600);
         this.setLayout(null);
-        owner.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
         a = new JButton("Zurück");
         a.setBounds(50, 30, 80, 50);
