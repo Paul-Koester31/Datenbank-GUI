@@ -36,10 +36,10 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
     JMenu adm = null;
     JMenuItem i1, i2, i3, i4, i5, i6, i7;
 
-    static JTable detail;
+    static DefaultTableModel dtm = new DefaultTableModel();
+    static JTable detail = new JTable(dtm);
     static JScrollPane dsc;
     static int vid = 1;
-    static DefaultTableModel dtm = new DefaultTableModel();
 
 
     public Einzelansicht(String ta) {
@@ -73,6 +73,9 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
         i4 = new JMenuItem("Suchen");
         i4.addActionListener(e -> {
             s.setText(JOptionPane.showInputDialog("Wonach wollen Sie suchen?"));
+            r = Suchen.search(s.getText(), r);
+            s.setText("");
+            einfügen(r);
         });
 
         i5 = new JMenuItem("Einfügen");
@@ -102,12 +105,11 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
 
         try (Connection conn = DriverManager.getConnection(url, "root", "")) {
             Statement s = conn.createStatement();
-            r = s.executeQuery("Select * FROM " + tab);
-            rm = r.getMetaData();
             sql = "Select * From " + tab;
+            r = s.executeQuery(sql);
+            rm = r.getMetaData();
             r.first();
             einfügen(r);
-            detailtab(vid);
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -176,7 +178,7 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
 
         t.addTableModelListener(this);
 
-        detail = new JTable(dtm);
+
         detail.setAutoCreateRowSorter(true);
         dsc = new JScrollPane(detail);
         dsc.setBounds(20, 250, 550, 400);
@@ -206,9 +208,10 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
             }
             t.addRow(rows);
             t.fireTableDataChanged();
+
             vid = r.getInt(1);
             detailtab(vid);
-            dtm.fireTableDataChanged();
+
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -222,16 +225,9 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
             @Override
             public void keyTyped(KeyEvent e) {
                 if (e.getKeyChar() == KeyEvent.VK_ENTER) {
-                    try {
-                        r = Suchen.search(s.getText(), r);
-                        s.setText("");
-                        einfügen(r);
-                        vid = r.getInt("V_ID");
-                        detailtab(vid);
-                    } catch (SQLException ex) {
-                        throw new RuntimeException(ex);
-                    }
-
+                    r = Suchen.search(s.getText(), r);
+                    s.setText("");
+                    einfügen(r);
                 }
             }
 
@@ -317,26 +313,7 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
             case "änd":
                 break;
             case "lösch":
-                System.out.println(t.getValueAt(0, 0));
-                String wh = t.getValueAt(0, 0).toString();
-                int response = JOptionPane.showConfirmDialog(null, "Wollen Sie den Eintrag löschen?", "Bestätigen", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-                if (response == 0) {
-                    try (Connection conn = DriverManager.getConnection(url, "root", "")) {
-                        Statement s = conn.createStatement();
-                        ResultSet r = s.executeQuery("DELETE  From " + tab + " WHERE " + t.getColumnName(0) + "=" + wh);
-                        ResultSet r2 = s.executeQuery("Select * from " + tab);
-                        r2.previous();
-                        einfügen(r2);
-                    } catch (SQLException ex) {
-                        throw new RuntimeException(ex);
-                    }
-
-                } else {
-
-                }
-                table.clearSelection();
-                t.removeRow(0);
-                t.fireTableDataChanged();
+               Löschen l = new Löschen(tab,t,table);
                 break;
             case "close":
                 this.dispose();
@@ -349,11 +326,11 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
     }
 
     public static void detailtab(int vid) {
-        dtm = Datail.detailmodel(vid, url);
+        Datail.detailmodel(dtm, vid, url);
         dtm.fireTableDataChanged();
 
 
-        System.out.println("detail ="+vid);
+        System.out.println("detail =" + vid);
 
 
     }

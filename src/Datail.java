@@ -14,9 +14,8 @@ public class Datail {
 
     }
 
-    public static DefaultTableModel detailmodel(int verein, String url) {
+    public static DefaultTableModel detailmodel(DefaultTableModel t,int verein, String url) {
         String[][] temp = {{""}};
-        DefaultTableModel t = new DefaultTableModel();
         System.out.println("test = "+verein);
 
         try (Connection conn = DriverManager.getConnection(url, "root", "")) {
