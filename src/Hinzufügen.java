@@ -2,6 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.sql.*;
+
 import static javax.swing.WindowConstants.DISPOSE_ON_CLOSE;
 
 public class Hinzufügen extends Dialog implements ActionListener {
@@ -15,8 +16,8 @@ public class Hinzufügen extends Dialog implements ActionListener {
     Font font = new Font("Arial", Font.PLAIN, 12);
 
 
-    public Hinzufügen(ResultSet r, String tab, JFrame owner,boolean modal) {
-        super(owner,modal);
+    public Hinzufügen(ResultSet r, String tab, JFrame owner, boolean modal) {
+        super(owner, modal);
 
 
         this.setSize(500, 600);
@@ -61,25 +62,24 @@ public class Hinzufügen extends Dialog implements ActionListener {
                 for (int i = 1; i < z; i++) {
                     try {
                         if (i == z - 1) {
-                            spalten = spalten + "'" + b[i].getText() + "'";
-                            sname = sname + rm.getColumnName(i + 1);
+                            if (b[i].getText().length() == 0) {
+                                int response = JOptionPane.showConfirmDialog(null, "Soll der Wert für " + rm.getColumnName(i + 1) + " 'NULL' übernommen werden?", "Bestätigen", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                                System.out.println(response);
+                                if (response == 0) {
+                                    spalten = spalten + " Null";
+                                    sname = sname + rm.getColumnName(i + 1);
+                                } else {
+                                    einf.setAction(null);
+                                }
+                            } else {
+                                spalten = spalten + "'" + b[i].getText() + "'";
+                                sname = sname + rm.getColumnName(i + 1);
+                            }
                         } else {
                             spalten = spalten + "'" + b[i].getText() + "',";
                             sname = sname + rm.getColumnName(i + 1) + ",";
                         }
                         System.out.println(b[i].getText());
-                        if (b[i].getText().length() == 0) {
-                            int response = JOptionPane.showConfirmDialog(null, "Soll der Wert für " + rm.getColumnName(i + 1) + " 'NULL' übernommen werden?", "Bestätigen", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-                            System.out.println(response);
-                            if (response == 0) {
-                                spalten= spalten+" Null";
-                            } else {
-                                break;
-                            }
-                        }
-
-
-
 
                     } catch (Exception ex) {
                         throw new RuntimeException(ex);
