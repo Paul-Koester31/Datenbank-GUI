@@ -15,8 +15,6 @@ public class Suchen {
     static JList list;
     static JScrollPane sc;
     static int index = 0;
-    static boolean auswahl = false;
-    static boolean fertig = false;
 
 
     public static ResultSet search(String st, ResultSet rs) {
@@ -48,14 +46,17 @@ public class Suchen {
                         liste.addElement(r.getString("Name"));
                     }
                     r.first();
-                    frame = new JFrame("Suchergebnis");
-                    frame.setSize(300, 300);
-                    frame.setVisible(true);
+                    System.out.println(liste.getSize());
+                    if (liste.getSize() > 1) {
+                        frame = new JFrame("Suchergebnis");
+                        frame.setSize(300, 300);
+                        frame.setVisible(true);
 
-                    sc = new JScrollPane();
-                    sc.setViewportView(list);
-                    sc.setBounds(30, 100, 150, 200);
-                    frame.add(sc);
+                        sc = new JScrollPane();
+                        sc.setViewportView(list);
+                        sc.setBounds(30, 100, 150, 200);
+                        frame.add(sc);
+                    }
 
                     //Auswahl durch Doppelklick
                     list.addMouseListener(new MouseAdapter() {
@@ -73,7 +74,8 @@ public class Suchen {
                                     System.out.println("index =" + index);
                                     Einzelansicht.einfügen(r);
                                     Einzelansicht.r = r;
-                                    auswahl = true;
+
+
                                 } catch (SQLException ex) {
                                     throw new RuntimeException(ex);
                                 }
@@ -83,7 +85,6 @@ public class Suchen {
                     });
 
 
-                    System.out.println(auswahl);
                     return r;
                 } else {
                     throw new Exception();

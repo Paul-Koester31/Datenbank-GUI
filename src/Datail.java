@@ -1,12 +1,12 @@
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
 import java.sql.*;
 
 public class Datail {
     public static ResultSet spieler(int verein, Connection con) {
+        //liefert das Resulset mit allen Spielern des Vereins
         try {
             Statement s = con.createStatement();
-            ResultSet r = s.executeQuery("SELECT * FROM Spieler WHERE Vereins_ID = " + verein);
+            ResultSet r = s.executeQuery("SELECT * FROM Spieler WHERE Vereins_ID = " + verein +" ORDER BY Spieler_Name");
             return r;
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -15,10 +15,11 @@ public class Datail {
     }
 
     public static DefaultTableModel detailmodel(DefaultTableModel t,int verein, String url) {
+        //Füllt das mitgegebene Tabelmodel mit den Daten der Spieler
         String[][] temp = {{""}};
-        System.out.println("test = "+verein);
 
         try (Connection conn = DriverManager.getConnection(url, "root", "")) {
+
             ResultSet r = spieler(verein, conn);
             ResultSetMetaData rm = r.getMetaData();
             rm.getColumnCount();
@@ -44,6 +45,7 @@ public class Datail {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+        //Gibt das Tabelmodel zurück
         return t;
     }
 }

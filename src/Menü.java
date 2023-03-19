@@ -10,6 +10,7 @@ public class Menü extends JFrame implements ActionListener {
     JList list = null;
     String url = "jdbc:mariadb://127.0.0.1:3306/bundesliga";
     String table = null;
+
     public static void main(String[] args) {
         Menü m = new Menü();
         m.setVisible(true);
@@ -25,7 +26,7 @@ public class Menü extends JFrame implements ActionListener {
         JLabel lbl = new JLabel("");
         ImageIcon img = new ImageIcon(new ImageIcon(Menü.class.getResource("/image/Bundesiga.jfif")).getImage());
         lbl.setIcon(img);
-        lbl.setBounds(150, 50, 200,202);
+        lbl.setBounds(150, 50, 200, 202);
         this.getContentPane().add(lbl);
         this.add(lbl);
 
@@ -69,7 +70,7 @@ public class Menü extends JFrame implements ActionListener {
         DefaultListModel liste = new DefaultListModel();
         list = new JList(liste);
         list.addListSelectionListener(e -> {
-            if (list.getSelectedValue().toString().equalsIgnoreCase("Verein") || list.getSelectedValue().toString().equalsIgnoreCase("spieler")) {
+            if (list.getSelectedValue().toString().equalsIgnoreCase("Verein")) {
                 this.add(v);
 
             } else

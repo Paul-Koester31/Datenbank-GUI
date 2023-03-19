@@ -9,33 +9,31 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.sql.*;
 
-public class Einzelansicht extends JFrame implements TableModelListener, ActionListener {
+public class Einzelansicht extends JFrame implements ActionListener {
 
     JScrollPane sc = null;
     JButton a = null;
     JButton einf = null;
     JButton del = null;
-    static JButton zur = null;
-    static JButton vor = null;
+    JButton zur = null;
+    JButton vor = null;
+    JButton ch = null;
+    JButton sz = null;
     static ResultSetMetaData rm = null;
     static DefaultTableModel t = new DefaultTableModel();
     static JTable table = new JTable(t);
     static ResultSet r = null;
     static String url = "jdbc:mariadb://127.0.0.1:3306/bundesliga";
-
     JTextField s = null;
-    String tab = null;
-
+    static String tab = null;
     JLabel such = null;
-
     Font font = new Font("Arial", Font.PLAIN, 12);
-    String sql = null;
+    static String sql = null;
     JMenuBar bar = null;
     JMenu dat = null;
     JMenu bew = null;
     JMenu adm = null;
     JMenuItem i1, i2, i3, i4, i5, i6, i7;
-
     static DefaultTableModel dtm = new DefaultTableModel();
     static JTable detail = new JTable(dtm);
     static JScrollPane dsc;
@@ -43,6 +41,7 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
 
 
     public Einzelansicht(String ta) {
+        //Frameeigenschaften werden deklariert
         this.setSize(600, 800);
         this.setResizable(false);
         this.setLayout(null);
@@ -50,10 +49,13 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
         tab = ta;
         this.setTitle(tab);
 
+        //Menüs für Menüleiste deklarieren
         bar = new JMenuBar();
         dat = new JMenu("Datei");
         bew = new JMenu("Bewegen");
         adm = new JMenu("Administration");
+
+        //Menüitems mit Namen versehen und aAtionen hinterlegen
         i1 = new JMenuItem("Programm schließen");
         i1.addActionListener(e -> {
             this.dispose();
@@ -68,7 +70,7 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
 
         i3 = new JMenuItem("Vorheriger Datensatz");
         i3.addActionListener(this);
-        i3.setActionCommand("zur");
+        i3.setActionCommand("rück");
 
         i4 = new JMenuItem("Suchen");
         i4.addActionListener(e -> {
@@ -90,6 +92,7 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
         i7.addActionListener(this);
         i7.setActionCommand("lösch");
 
+        //Menüitems an Menüs binden
         dat.add(i1);
         bew.add(i2);
         bew.add(i3);
@@ -103,19 +106,8 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
         this.setJMenuBar(bar);
 
 
-        try (Connection conn = DriverManager.getConnection(url, "root", "")) {
-            Statement s = conn.createStatement();
-            sql = "Select * From " + tab;
-            r = s.executeQuery(sql);
-            rm = r.getMetaData();
-            r.first();
-            einfügen(r);
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-
-        vor = new JButton("Weiter");
+        //Buttons
+        vor = new JButton("Vorwärts");
         vor.setBounds(350, 150, 90, 50);
         vor.setFont(font);
         vor.setBackground(Color.white);
@@ -124,23 +116,17 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
         vor.setActionCommand("vor");
         this.add(vor);
 
-        zur = new JButton("Letzte");
+        zur = new JButton("Rückwärts");
         zur.setBounds(80, 150, 90, 50);
         zur.setFont(font);
         zur.setBackground(Color.white);
         zur.setForeground(Color.black);
         zur.addActionListener(this);
-        zur.setActionCommand("zur");
+        zur.setActionCommand("rück");
         this.add(zur);
 
-
-        sc = new JScrollPane(Einzelansicht.table);
-        sc.setBounds(50, 100, 400, 50);
-        sc.getHorizontalScrollBar();
-        this.add(sc);
-
         a = new JButton("Zurück");
-        a.setBounds(50, 30, 80, 50);
+        a.setBounds(50, 30, 80, 30);
         a.setForeground(Color.BLACK);
         a.setBackground(Color.white);
         a.setFont(font);
@@ -149,7 +135,7 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
         this.add(a);
 
         einf = new JButton("Einfügen");
-        einf.setBounds(470, 50, 100, 50);
+        einf.setBounds(470, 20, 80, 30);
         einf.setForeground(Color.BLACK);
         einf.setBackground(Color.white);
         einf.setFont(font);
@@ -157,9 +143,18 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
         einf.setActionCommand("einf");
         this.add(einf);
 
+        ch = new JButton("Ändern");
+        ch.setBounds(470, 80, 80, 30);
+        ch.setFont(font);
+        ch.setBackground(Color.white);
+        ch.setForeground(Color.black);
+        ch.addActionListener(this);
+        ch.setActionCommand("änd");
+        this.add(ch);
+
 
         del = new JButton("Löschen");
-        del.setBounds(470, 120, 100, 50);
+        del.setBounds(470, 140, 80, 30);
         del.setForeground(Color.BLACK);
         del.setBackground(Color.white);
         del.setFont(font);
@@ -167,6 +162,26 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
         del.setActionCommand("lösch");
         this.add(del);
 
+        sz = new JButton("Zurücksetzen");
+        sz.setBounds(185, 10, 105, 30);
+        sz.setForeground(Color.BLACK);
+        sz.setBackground(Color.white);
+        sz.setFont(font);
+        sz.addActionListener(e -> {
+            standart(1);
+            this.remove(sz);
+            this.repaint();
+        });
+
+
+        //Mastertabelle in Scrollbar
+        table.setCellEditor(null);
+        sc = new JScrollPane(Einzelansicht.table);
+        sc.setBounds(50, 100, 400, 50);
+        sc.getHorizontalScrollBar();
+        this.add(sc);
+
+        //Jlabel und JTextfield für die Suche
         such = new JLabel("Suchen");
         such.setBounds(300, 10, 50, 20);
         this.add(such);
@@ -176,19 +191,34 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
         this.add(s);
         suchen();
 
-        t.addTableModelListener(this);
-
-
+        //Detailtabelle in Scrollpane
         detail.setAutoCreateRowSorter(true);
         dsc = new JScrollPane(detail);
         dsc.setBounds(20, 250, 550, 400);
         dsc.getHorizontalScrollBar();
         this.add(dsc);
 
+        standart(1);
 
     }
 
+    public static void standart(int row) {
+        //Alle Datensätze in das Resultset und an bestimmter Position anzeigen
+        try (Connection conn = DriverManager.getConnection(url, "root", "")) {
+            Statement s = conn.createStatement();
+            sql = "Select * From " + tab;
+            r = s.executeQuery(sql);
+            rm = r.getMetaData();
+            r.absolute(row);
+            einfügen(r);
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static void einfügen(ResultSet r) {
+        //Datensatz an bestimmter Position des Resultsets in die Tabele einfügen
         String[][] temp = {{""}};
 
         try {
@@ -209,6 +239,7 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
             t.addRow(rows);
             t.fireTableDataChanged();
 
+            //Methode für die Detailtabelle
             vid = r.getInt(1);
             detailtab(vid);
 
@@ -220,7 +251,7 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
     }
 
     public void suchen() {
-
+        //Bei dem bestätigen der Suchanfrage mit Enter wird die Suche gestartet und die ergebnisse als Resultset angezeigt
         s.addKeyListener(new KeyListener() {
             @Override
             public void keyTyped(KeyEvent e) {
@@ -228,6 +259,8 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
                     r = Suchen.search(s.getText(), r);
                     s.setText("");
                     einfügen(r);
+                    Einzelansicht.this.add(sz);
+                    Einzelansicht.this.repaint();
                 }
             }
 
@@ -243,47 +276,12 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
         });
     }
 
-    @Override
-    public void tableChanged(TableModelEvent e) {
-        int zeile = table.getSelectedRow();
-        int spalte = table.getSelectedColumn();
-        if (spalte > 0) {
-            int response = 0;
-            try {
-                response = JOptionPane.showConfirmDialog(null, "Wollen Sie dein Eintrag in Zeile " + (zeile + 1) + ", Spalte :" + (rm.getColumnName(spalte + 1)) + " ändern?", "Bestätigen", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-            } catch (SQLException ex) {
-                throw new RuntimeException(ex);
-            }
-            if (response == 0) {
-                try (Connection conn = DriverManager.getConnection(url, "root", "")) {
-                    Statement s = conn.createStatement();
-                    System.out.println(t.getColumnName(spalte) + "\n" + rm.getColumnTypeName(spalte + 1));
-                    if (rm.getColumnTypeName(spalte + 1).equalsIgnoreCase("Varchar")) {
-                        ResultSet r = s.executeQuery("Update " + tab + " set " + t.getColumnName(spalte) + "= '" + t.getValueAt(zeile, spalte).toString() + "' WHERE " + t.getColumnName(0) + " = " + t.getValueAt(zeile, 0));
-
-                    } else if (rm.getColumnTypeName(spalte + 1).equalsIgnoreCase("Date")) {
-                        ResultSet r = s.executeQuery("Update " + tab + " set " + t.getColumnName(spalte) + "= '" + t.getValueAt(zeile, spalte).toString() + "' WHERE " + t.getColumnName(0) + " = " + t.getValueAt(zeile, 0));
-
-                    } else {
-                        ResultSet r = s.executeQuery("Update " + tab + " set " + t.getColumnName(spalte) + "= " + t.getValueAt(zeile, spalte).toString() + " WHERE " + t.getColumnName(0) + " = " + t.getValueAt(zeile, 0));
-
-                    }
-                    table.clearSelection();
-                } catch (SQLException f) {
-                    throw new RuntimeException(f);
-                }
-                t.fireTableDataChanged();
-            } else {
-                table.clearSelection();
-            }
-
-        }
-
-    }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         String command = e.getActionCommand();
+
+        //Aktionen des Menüs und der Buttons
         switch (command) {
             case "vor":
                 try {
@@ -295,27 +293,52 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
                     throw new RuntimeException(ex);
                 }
                 break;
-            case "zur":
+            case "rück":
                 try {
                     if (r.previous()) {
                         einfügen(r);
-                        vid = r.getInt("V_ID");
                     }
                 } catch (SQLException ex) {
                     throw new RuntimeException(ex);
                 }
                 break;
             case "einf":
+                //Ein Objekt der Klasse Hinzufügen wird erzeugt und ein Modaler Dialog wird angezeigt
                 Hinzufügen d = new Hinzufügen(r, tab, this, true);
                 d.setVisible(true);
 
                 break;
             case "änd":
+                int spalte = table.getSelectedColumn();
+                //ist die ausgewählte Spalte > 0 dann wird der Datensatz nach bestätigung geändert
+                if (spalte > 0) {
+                    try (Connection conn = DriverManager.getConnection(url, "root", "")) {
+                        Statement s = conn.createStatement();
+                        String eingabe = JOptionPane.showInputDialog(t.getColumnName(spalte), r.getString(spalte + 1));
+                        if (eingabe != null) {
+                            System.out.println("test");
+                            ResultSet ra = s.executeQuery("Update " + tab + " set " + t.getColumnName(spalte) + "= '" + eingabe + "' WHERE " + t.getColumnName(0) + " = " + r.getString(1));
+                            standart(r.getRow());
+                        }
+                        table.clearSelection();
+                    } catch (SQLException f) {
+                        JOptionPane.showMessageDialog(null, "Da hat etwas nicht geklappt", "Fehler!", JOptionPane.ERROR_MESSAGE);
+                        table.clearSelection();
+                        throw new RuntimeException(f);
+                    }
+                    t.fireTableDataChanged();
+                } else {
+                    JOptionPane.showMessageDialog(null, "Wählen Sie bitte eine Zelle der Tabelle aus. \n Die " + t.getColumnName(0) + " ist nicht veränderbar.");
+                    table.clearSelection();
+                }
+
                 break;
             case "lösch":
-               Löschen l = new Löschen(tab,t,table);
+                //Ein Objekt der Klasse Löschen wird erzeugt
+                Löschen l = new Löschen(tab, t, table);
                 break;
             case "close":
+                //Die Einzelansicht schließt sich und man kehr tins Hauptmenü zurück
                 this.dispose();
                 Menü m = new Menü();
                 m.setVisible(true);
@@ -326,9 +349,9 @@ public class Einzelansicht extends JFrame implements TableModelListener, ActionL
     }
 
     public static void detailtab(int vid) {
+        //Tabelmodel wird an die Methode weitergegeben und für die ansicht der Spieler verändert
         Datail.detailmodel(dtm, vid, url);
         dtm.fireTableDataChanged();
-
 
         System.out.println("detail =" + vid);
 

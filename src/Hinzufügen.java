@@ -3,10 +3,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.sql.*;
 
-import static javax.swing.WindowConstants.DISPOSE_ON_CLOSE;
-
 public class Hinzufügen extends Dialog implements ActionListener {
-    JFrame frame;
     JButton a = null;
     ResultSetMetaData rm = null;
     JButton einf = null;
@@ -17,12 +14,14 @@ public class Hinzufügen extends Dialog implements ActionListener {
 
 
     public Hinzufügen(ResultSet r, String tab, JFrame owner, boolean modal) {
+        //Ein Modaler Dialog braucht einen Owner, in dme Fall der Frame
         super(owner, modal);
 
-
+        //Framesettings
         this.setSize(500, 600);
         this.setLayout(null);
 
+        //Button um den Vorgang abzubrechen
         a = new JButton("Zurück");
         a.setBounds(50, 30, 80, 50);
         a.setFont(font);
@@ -33,6 +32,7 @@ public class Hinzufügen extends Dialog implements ActionListener {
         });
         this.add(a);
 
+        //Es wird für jede Spalte der Tabelle ein Textfeld und ein Bezeichner (JLabel) erzeugt
         try {
             rm = r.getMetaData();
             int x = 10;
@@ -53,29 +53,38 @@ public class Hinzufügen extends Dialog implements ActionListener {
                     y = 300;
                 }
             }
+            //Der Button zum Bestätigen der Eingabe
             einf = new JButton("Einfügen");
             einf.setBounds(50, 480, 100, 50);
             einf.setFont(font);
             einf.setForeground(Color.black);
             einf.setBackground(Color.white);
             einf.addActionListener(e -> {
+                //Erst wird jedes Textfeld durchgegangen und unterschieden, ob die eingabe Null ist oder nicht
                 for (int i = 1; i < z; i++) {
                     try {
+                        //Ist die letze Spalte bzw Textfeld erreicht dann wird Folgendes ausgeführt
                         if (i == z - 1) {
+                            //Wenn ein Textfeld Null ist, dann wird der User gefragt, ob er dies so übernehmen möchte
                             if (b[i].getText().length() == 0) {
                                 int response = JOptionPane.showConfirmDialog(null, "Soll der Wert für " + rm.getColumnName(i + 1) + " 'NULL' übernommen werden?", "Bestätigen", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
                                 System.out.println(response);
                                 if (response == 0) {
+                                    //Der Wert Null wird übernommen
                                     spalten = spalten + " Null";
                                     sname = sname + rm.getColumnName(i + 1);
                                 } else {
-                                    einf.setAction(null);
+                                    //Der Wert Null wird nicht übernommen
+                                    spalten ="";
+                                    sname="";
                                 }
                             } else {
+                                //Um dem SQL-Syntax gerecht zu werden hat der letzte Wert kein ','
                                 spalten = spalten + "'" + b[i].getText() + "'";
                                 sname = sname + rm.getColumnName(i + 1);
                             }
                         } else {
+                            //Liefert das Textfeld Text bzw Werte, dann werden Strings gefült
                             spalten = spalten + "'" + b[i].getText() + "',";
                             sname = sname + rm.getColumnName(i + 1) + ",";
                         }
@@ -90,12 +99,20 @@ public class Hinzufügen extends Dialog implements ActionListener {
                 String sql = "Insert into " + tab + "(" + sname + ") Values (" + spalten + ")";
                 System.out.println(sql);
                 Connection conn = null;
+
+                //Der Eintrag wird in die Datenbank eingefügt
                 try {
                     conn = DriverManager.getConnection(url, "root", "");
                     Statement s = conn.createStatement();
                     ResultSet a = s.executeQuery(sql);
                     this.dispose();
+                    //Der eingefügte Datensatz wird angezeigt
+                    Einzelansicht.r.last();
+                    Einzelansicht.standart(Einzelansicht.r.getRow() + 1);
                 } catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(null, "Da hat etwas nicht geklappt", "Fehler!", JOptionPane.ERROR_MESSAGE);
+                    sname = "";
+                    spalten = "";
                     throw new RuntimeException(ex);
                 }
             });
@@ -103,6 +120,7 @@ public class Hinzufügen extends Dialog implements ActionListener {
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
+
         }
     }
 
